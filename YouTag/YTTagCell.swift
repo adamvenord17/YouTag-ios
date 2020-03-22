@@ -21,6 +21,7 @@ class YTTagCell: UICollectionViewCell {
 		txtfld.addPadding(padding: .equalSpacing(7.5))
 		txtfld.tintColor = .white
 		txtfld.backgroundColor = UIColor.clear
+		txtfld.autocorrectionType = .no
 		txtfld.returnKeyType = .done
 		txtfld.font = UIFont.init(name: "DINCondensed-Bold", size: 16)
 		return txtfld
