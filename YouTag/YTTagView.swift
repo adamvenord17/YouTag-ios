@@ -20,7 +20,7 @@ class YTTagView: UICollectionView, UICollectionViewDataSource, UICollectionViewD
 	var isDeleteEnabled: Bool!
 	var tagsList: NSMutableArray!
 	var selectedTagList: NSMutableArray!
-	private var isEditing: Bool!
+	var isEditing: Bool!
 	
 	
 	init(frame: CGRect, tagsList: NSMutableArray, isAddEnabled: Bool, isMultiSelection: Bool, isDeleteEnabled: Bool) {
@@ -52,19 +52,19 @@ class YTTagView: UICollectionView, UICollectionViewDataSource, UICollectionViewD
 	required init?(coder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
-	
-	func addTags(_ tagsList: NSMutableArray!) {
-		self.tagsList.addObjects(from: tagsList as! [Any])
-		ytdelegate?.tagsListChanged(newTagsList: self.tagsList)
-		self.reloadData()
-	}
-	
+		
 	func removeTag(at index: Int) {
 		if isAddEnabled {
 			self.tagsList.removeObject(at: index-1)
 		} else {
 			self.tagsList.removeObject(at: index)
 		}
+		ytdelegate?.tagsListChanged(newTagsList: self.tagsList)
+		self.reloadData()
+	}
+
+	func removeAllTags() {
+		self.tagsList.removeAllObjects()
 		ytdelegate?.tagsListChanged(newTagsList: self.tagsList)
 		self.reloadData()
 	}
@@ -96,6 +96,15 @@ class YTTagView: UICollectionView, UICollectionViewDataSource, UICollectionViewD
 				let currentController = self.getCurrentViewController()
 				currentController?.present(actionSheet, animated: true, completion: nil)
 			}
+		} else {
+			let actionSheet = UIAlertController(title: "Are you sure to delete all tags?", message: nil, preferredStyle: UIAlertController.Style.actionSheet)
+			actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler:nil))
+			actionSheet.addAction(UIAlertAction(title: "Delete", style: .default, handler:{ (UIAlertAction) in
+				print("User requested delete for all tags")
+				self.removeAllTags()
+			}))
+			let currentController = self.getCurrentViewController()
+			currentController?.present(actionSheet, animated: true, completion: nil)
 		}
 	}
 
@@ -110,22 +119,21 @@ class YTTagView: UICollectionView, UICollectionViewDataSource, UICollectionViewD
 		if isAddEnabled && indexPath.row == 0 {
 			tagCell.backgroundColor = GraphicColors.green
 			tagCell.layer.borderColor = GraphicColors.darkGreen.cgColor
-			tagCell.textField.textColor = .white
-			tagCell.textField.placeholder = addTagPlaceHolder
 			tagCell.titleLabel.textColor = .white
 			tagCell.titleLabel.text = "+"
 			tagCell.titleLabel.font = UIFont.init(name: "DINCondensed-Bold", size: 24)
+			tagCell.textField.textColor = .white
+			tagCell.textField.placeholder = addTagPlaceHolder
+			tagCell.textField.font = UIFont.init(name: "DINCondensed-Bold", size: 18)
 		} else {
-			tagCell.backgroundColor = .white
+			tagCell.backgroundColor = .clear
 			tagCell.titleLabel.textColor = .darkGray
+			tagCell.titleLabel.font = UIFont.init(name: "DINCondensed-Bold", size: 18)
 			tagCell.textField.textColor = .darkGray
-			tagCell.titleLabel.font = UIFont.init(name: "DINCondensed-Bold", size: 16)
+			tagCell.textField.font = UIFont.init(name: "DINCondensed-Bold", size: 18)
 			tagCell.layer.borderColor = GraphicColors.orange.cgColor
-			if isAddEnabled {
-				tagCell.titleLabel.text = tagsList.object(at: indexPath.row-1) as? String
-			} else {
-				tagCell.titleLabel.text = tagsList.object(at: indexPath.row) as? String
-			}
+			let index = isAddEnabled ? indexPath.row - 1 : indexPath.row
+			tagCell.titleLabel.text = tagsList.object(at: index) as? String
 		}
 		return tagCell
 	}
@@ -138,13 +146,9 @@ class YTTagView: UICollectionView, UICollectionViewDataSource, UICollectionViewD
 			isEditing = false
 			return cellSize
 		}
-		var titleWidth: CGFloat
-		if isAddEnabled {
-			titleWidth = (tagsList.object(at: indexPath.row-1) as! String).estimateSizeWidth(font: UIFont.systemFont(ofSize: 17), padding: 20)
-		} else {
-			titleWidth = (tagsList.object(at: indexPath.row) as! String).estimateSizeWidth(font: UIFont.systemFont(ofSize: 17), padding: 20)
-		}
-		titleWidth = titleWidth > collectionView.frame.width*0.475 ? collectionView.frame.width*0.475:titleWidth
+		let index = isAddEnabled ? indexPath.row - 1 : indexPath.row
+		var titleWidth = (tagsList.object(at: index) as! String).estimateSizeWidth(font: UIFont.init(name: "DINCondensed-Bold", size: 18)!, padding: 32.0 / 1.5)
+		titleWidth = titleWidth > collectionView.frame.width * 0.475 ? collectionView.frame.width * 0.475:titleWidth
 		return CGSize(width: titleWidth, height: 32)
 	}
 	
