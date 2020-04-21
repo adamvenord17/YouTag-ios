@@ -50,8 +50,10 @@ class PlaylistLibraryView: LibraryTableView {
 
 		print("Selected cell number \(indexPath.row) -> \(cell.songDict["title"] ?? "")")
 
+		playlistArray.insert(playlistArray.lastObject!, at: 0)
+		playlistArray.removeLastObject()
 		playlistArray.remove(cell.songDict)
-		playlistArray.insert(cell.songDict, at: 0)
+		playlistArray.add(cell.songDict)
 		
 		tableView.deselectRow(at: indexPath, animated: false)
 		tableView.reloadData()

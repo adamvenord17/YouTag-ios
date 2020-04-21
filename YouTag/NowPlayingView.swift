@@ -77,23 +77,34 @@ class NowPlayingView: UIView, YYTAudioPlayerDelegate {
 	let lyricsButton: UIButton = {
 		let btn = UIButton()
 		btn.backgroundColor = .clear
-		btn.titleLabel?.font = UIFont(name: "DINAlternate-Bold", size: 22)
+		btn.titleLabel?.font = UIFont(name: "DINAlternate-Bold", size: 24)
 		btn.setTitle("What's next", for: .normal)
 		btn.setTitleColor(GraphicColors.orange, for: .normal)
 		return btn
 	}()
+	let lyricsTextView: UITextView = {
+		let txtView = UITextView()
+		txtView.backgroundColor = .clear
+		txtView.textAlignment = .center
+		txtView.font = UIFont.init(name: "Optima-BoldItalic", size: 15)
+		txtView.isEditable = false
+		txtView.layer.borderWidth = 1.0
+		txtView.layer.borderColor = GraphicColors.orange.withAlphaComponent(0.5).cgColor
+		return txtView
+	}()
 	let repeatButton: UIButton = {
 		let btn = UIButton()
 		btn.backgroundColor = .clear
-		btn.titleLabel?.font = UIFont(name: "DINAlternate-Bold", size: 22)
-		btn.setTitle("♾", for: .normal)
+		btn.imageView!.contentMode = .scaleAspectFit
+		btn.setImage(UIImage(named: "loop"), for: UIControl.State.normal)
+		btn.alpha = 0.35
 		return btn
 	}()
 	let shuffleButton: UIButton = {
 		let btn = UIButton()
 		btn.backgroundColor = .clear
-		btn.titleLabel?.font = UIFont(name: "DINAlternate-Bold", size: 22)
-		btn.setTitle("🔀", for: .normal)
+		btn.imageView!.contentMode = .scaleAspectFit
+		btn.setImage(UIImage(named: "shuffle"), for: UIControl.State.normal)
 		return btn
 	}()
 
@@ -113,13 +124,13 @@ class NowPlayingView: UIView, YYTAudioPlayerDelegate {
 		playlistControlView.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
 		playlistControlView.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
 		playlistControlView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
-		playlistControlView.heightAnchor.constraint(equalTo: self.heightAnchor, multiplier: 0.3).isActive = true
+		playlistControlView.heightAnchor.constraint(equalTo: self.heightAnchor, multiplier: 0.375).isActive = true
 
 		repeatButton.addTarget(self, action: #selector(repeatButtonAction), for: .touchUpInside)
 		playlistControlView.addSubview(repeatButton)
 		repeatButton.translatesAutoresizingMaskIntoConstraints = false
 		repeatButton.leadingAnchor.constraint(equalTo: playlistControlView.leadingAnchor, constant: 2.5).isActive = true
-		repeatButton.widthAnchor.constraint(equalTo: playlistControlView.widthAnchor, multiplier: 0.15).isActive = true
+		repeatButton.widthAnchor.constraint(equalTo: playlistControlView.widthAnchor, multiplier: 0.125).isActive = true
 		repeatButton.centerYAnchor.constraint(equalTo: playlistControlView.centerYAnchor).isActive = true
 		repeatButton.heightAnchor.constraint(equalTo: playlistControlView.heightAnchor).isActive = true
 		
@@ -127,17 +138,27 @@ class NowPlayingView: UIView, YYTAudioPlayerDelegate {
 		playlistControlView.addSubview(shuffleButton)
 		shuffleButton.translatesAutoresizingMaskIntoConstraints = false
 		shuffleButton.trailingAnchor.constraint(equalTo: playlistControlView.trailingAnchor, constant: -2.5).isActive = true
-		shuffleButton.widthAnchor.constraint(equalTo: playlistControlView.widthAnchor, multiplier: 0.15).isActive = true
+		shuffleButton.widthAnchor.constraint(equalTo: playlistControlView.widthAnchor, multiplier: 0.125).isActive = true
 		shuffleButton.centerYAnchor.constraint(equalTo: playlistControlView.centerYAnchor).isActive = true
 		shuffleButton.heightAnchor.constraint(equalTo: playlistControlView.heightAnchor).isActive = true
 
-		//lyricsButton.addTarget(self, action: #selector(lyricsButtonAction), for: .touchUpInside)
+		lyricsButton.addTarget(self, action: #selector(lyricsButtonAction), for: .touchUpInside)
 		playlistControlView.addSubview(lyricsButton)
 		lyricsButton.translatesAutoresizingMaskIntoConstraints = false
 		lyricsButton.leadingAnchor.constraint(equalTo: repeatButton.trailingAnchor, constant: 2.5).isActive = true
 		lyricsButton.trailingAnchor.constraint(equalTo: shuffleButton.leadingAnchor, constant: -2.5).isActive = true
 		lyricsButton.centerYAnchor.constraint(equalTo: playlistControlView.centerYAnchor).isActive = true
 		lyricsButton.heightAnchor.constraint(equalTo: playlistControlView.heightAnchor).isActive = true
+
+		let tapOutTextView = UITapGestureRecognizer(target: self, action: #selector(lyricsButtonAction))
+		lyricsTextView.addGestureRecognizer(tapOutTextView)
+		lyricsTextView.isHidden = true
+		self.addSubview(lyricsTextView)
+		lyricsTextView.translatesAutoresizingMaskIntoConstraints = false
+		lyricsTextView.leadingAnchor.constraint(equalTo: lyricsButton.leadingAnchor).isActive = true
+		lyricsTextView.trailingAnchor.constraint(equalTo: lyricsButton.trailingAnchor).isActive = true
+		lyricsTextView.topAnchor.constraint(equalTo: lyricsButton.topAnchor).isActive = true
+		lyricsTextView.bottomAnchor.constraint(equalTo: lyricsButton.bottomAnchor).isActive = true
 
 		songControlView.addBorder(side: .top, color: .lightGray, width: 1.0)
 		self.addSubview(songControlView)
@@ -199,24 +220,24 @@ class NowPlayingView: UIView, YYTAudioPlayerDelegate {
 		nextButton.translatesAutoresizingMaskIntoConstraints = false
 		nextButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -5).isActive = true
 		nextButton.centerYAnchor.constraint(equalTo: thumbnailImageView.centerYAnchor).isActive = true
-		nextButton.heightAnchor.constraint(equalTo: thumbnailImageView.heightAnchor, multiplier: 0.275).isActive = true
-		nextButton.widthAnchor.constraint(equalTo: thumbnailImageView.heightAnchor, multiplier: 0.275).isActive = true
+		nextButton.heightAnchor.constraint(equalTo: thumbnailImageView.heightAnchor, multiplier: 0.25).isActive = true
+		nextButton.widthAnchor.constraint(equalTo: thumbnailImageView.heightAnchor, multiplier: 0.25).isActive = true
 
 		pausePlayButton.addTarget(self, action: #selector(pausePlayButtonAction), for: .touchUpInside)
 		self.addSubview(pausePlayButton)
 		pausePlayButton.translatesAutoresizingMaskIntoConstraints = false
 		pausePlayButton.trailingAnchor.constraint(equalTo: nextButton.leadingAnchor, constant: -5).isActive = true
 		pausePlayButton.centerYAnchor.constraint(equalTo: nextButton.centerYAnchor).isActive = true
-		pausePlayButton.heightAnchor.constraint(equalTo: nextButton.heightAnchor).isActive = true
-		pausePlayButton.widthAnchor.constraint(equalTo: nextButton.heightAnchor).isActive = true
+		pausePlayButton.heightAnchor.constraint(equalTo: nextButton.heightAnchor, multiplier: 1.5).isActive = true
+		pausePlayButton.widthAnchor.constraint(equalTo: nextButton.heightAnchor, multiplier: 1.5).isActive = true
 
 		previousButton.addTarget(self, action: #selector(previousButtonAction), for: .touchUpInside)
 		self.addSubview(previousButton)
 		previousButton.translatesAutoresizingMaskIntoConstraints = false
 		previousButton.trailingAnchor.constraint(equalTo: pausePlayButton.leadingAnchor, constant: -5).isActive = true
 		previousButton.centerYAnchor.constraint(equalTo: pausePlayButton.centerYAnchor).isActive = true
-		previousButton.heightAnchor.constraint(equalTo: pausePlayButton.heightAnchor).isActive = true
-		previousButton.widthAnchor.constraint(equalTo: pausePlayButton.heightAnchor).isActive = true
+		previousButton.heightAnchor.constraint(equalTo: nextButton.heightAnchor).isActive = true
+		previousButton.widthAnchor.constraint(equalTo: nextButton.heightAnchor).isActive = true
 
         self.addSubview(titleLabel)
 		titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -275,9 +296,18 @@ class NowPlayingView: UIView, YYTAudioPlayerDelegate {
 	@objc func repeatButtonAction(sender: UIButton!) {
 		print("repeat Button tapped")
 		print("new repeat status: ", !audioPlayer.isSongRepeat)
+		repeatButton.alpha = !audioPlayer.isSongRepeat ? 1 : 0.35
 		audioPlayer.isSongRepeat = !audioPlayer.isSongRepeat
 	}
 	
+	@objc func lyricsButtonAction(sender: UIButton!) {
+		print("lyrics Button tapped")
+		if lyricsTextView.text != "" {
+			lyricsTextView.isHidden = !lyricsTextView.isHidden
+			lyricsButton.isHidden = !lyricsButton.isHidden
+		}
+	}
+
 	@objc func onSliderValChanged(slider: UISlider, event: UIEvent) {
 		if let touchEvent = event.allTouches?.first {
 			switch touchEvent.phase {
