@@ -12,17 +12,24 @@ import MarqueeLabel
 class LibraryCell : UITableViewCell {
   
 	var songDict = Dictionary<String, Any>()
-    let thumbnailImageView = UIImageView()
+	let thumbnailImageView: UIImageView = {
+		let imgView = UIImageView()
+		imgView.layer.cornerRadius = 5.0
+		imgView.layer.borderWidth = 1.0
+		imgView.layer.borderColor = UIColor.lightGray.cgColor
+		imgView.layer.masksToBounds = true
+		return imgView
+	}()
 	let titleLabel: MarqueeLabel = {
 		let lbl = MarqueeLabel.init(frame: .zero, duration: 8.0, fadeLength: 10.0)
-		lbl.trailingBuffer = 30.0
+		lbl.trailingBuffer = 40.0
 		lbl.font = UIFont(name: "DINAlternate-Bold", size: 22)
 		lbl.textAlignment = .left
 		return lbl
 	}()
 	let artistLabel: MarqueeLabel = {
 		let lbl = MarqueeLabel.init(frame: .zero, duration: 8.0, fadeLength: 10.0)
-		lbl.trailingBuffer = 30.0
+		lbl.trailingBuffer = 40.0
 		lbl.font = UIFont(name: "DINAlternate-Bold", size: 22 * 0.65)
 		lbl.textAlignment = .left
 		return lbl
@@ -38,10 +45,7 @@ class LibraryCell : UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 		self.backgroundColor = .clear
-		thumbnailImageView.layer.cornerRadius = 5.0
-		thumbnailImageView.layer.borderWidth = 1.0
-		thumbnailImageView.layer.borderColor = UIColor.lightGray.cgColor
-
+		
         self.contentView.addSubview(thumbnailImageView)
 		thumbnailImageView.translatesAutoresizingMaskIntoConstraints = false
 		thumbnailImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 5).isActive = true
@@ -82,6 +86,7 @@ class LibraryCell : UITableViewCell {
 		self.thumbnailImageView.image = UIImage(data: imageData ?? Data())
 		self.durationLabel.text = songDict["duration"] as? String
 		
+		titleLabel.labelize = true
 		titleLabel.restartLabel()
 		if titleLabel.text!.isRTL {
 			titleLabel.type = .continuousReverse
@@ -89,6 +94,7 @@ class LibraryCell : UITableViewCell {
 			titleLabel.type = .continuous
 		}
 
+		artistLabel.labelize = true
 		artistLabel.restartLabel()
 		if artistLabel.text!.isRTL {
 			artistLabel.type = .continuousReverse

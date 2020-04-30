@@ -17,17 +17,24 @@ class NowPlayingView: UIView, YYTAudioPlayerDelegate {
 	weak var NPDelegate: NowPlayingViewDelegate?
 
 	var audioPlayer: YYTAudioPlayer!
-	let thumbnailImageView = UIImageView()
+	let thumbnailImageView: UIImageView = {
+		let imgView = UIImageView()
+		imgView.layer.cornerRadius = 5.0
+		imgView.layer.borderWidth = 1.0
+		imgView.layer.borderColor = UIColor.lightGray.cgColor
+		imgView.layer.masksToBounds = true
+		return imgView
+	}()
 	let titleLabel: MarqueeLabel = {
-		let lbl = MarqueeLabel.init(frame: .zero, duration: 8.0, fadeLength: 10.0)
-		lbl.trailingBuffer = 30.0
+		let lbl = MarqueeLabel.init(frame: .zero, rate: 45.0, fadeLength: 10.0)
+		lbl.trailingBuffer = 40.0
 		lbl.font = UIFont(name: "DINAlternate-Bold", size: 22)
 		lbl.textAlignment = .left
 		return lbl
 	}()
 	let artistLabel: MarqueeLabel = {
-		let lbl = MarqueeLabel.init(frame: .zero, duration: 8.0, fadeLength: 10.0)
-		lbl.trailingBuffer = 30.0
+		let lbl = MarqueeLabel.init(frame: .zero, rate: 45.0, fadeLength: 10.0)
+		lbl.trailingBuffer = 40.0
 		lbl.font = UIFont(name: "DINAlternate-Bold", size: 22 * 0.65)
 		lbl.textAlignment = .left
 		return lbl
