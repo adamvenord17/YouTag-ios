@@ -56,8 +56,9 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	
 	func setupPlayer(withSong songDict: Dictionary<String, Any>) -> Bool {
 		self.songDict = songDict
-		let songID = songDict["id"] as? String ?? ""
-		let url = LocalFilesManager.getLocalFileURL(withNameAndExtension: "\(songID).m4a")
+		let songID = songDict["id"] as! String
+		let songExt = songDict["fileExtension"] as? String ?? "m4a"  //support legacy code
+		let url = LocalFilesManager.getLocalFileURL(withNameAndExtension: "\(songID).\(songExt)")
 		do {
 			if audioPlayer != nil {
 				updater.invalidate()
@@ -71,7 +72,6 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 			delegate?.audioPlayerPlayingStatusChanged(isPlaying: false)
 			setPlayerRate(to: oldPlaybackRate)
 			updater = CADisplayLink(target: self, selector: #selector(updateDelegate))
-			updater.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
 			return true
 		} catch {
 			print("Error: \(error.localizedDescription)")
@@ -80,16 +80,19 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	}
 	
 	func setPlayerRate(to rate: Float) {
-		self.audioPlayer.rate = rate
+		audioPlayer.rate = rate
 		updateNowPlaying(isPause: isPlaying())
 	}
 
 	func getPlayerRate() -> Float {
-		return self.audioPlayer?.rate ?? 1.0
+		return audioPlayer?.rate ?? 1.0
 	}
 
 	func setPlayerCurrentTime(withPercentage percenatge: Float) {
-		self.audioPlayer.currentTime = TimeInterval(percenatge * Float(self.audioPlayer.duration))
+		if audioPlayer == nil {
+			return
+		}
+		audioPlayer.currentTime = TimeInterval(percenatge * Float(audioPlayer.duration))
 		updateNowPlaying(isPause: isPlaying())
 	}
 	
@@ -111,6 +114,7 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 			audioPlayer.play()
 			updateNowPlaying(isPause: false)
 			delegate?.audioPlayerPlayingStatusChanged(isPlaying: true)
+			updater.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
 		}
 	}
 
@@ -119,6 +123,7 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 			audioPlayer.pause()
 			updateNowPlaying(isPause: true)
 			delegate?.audioPlayerPlayingStatusChanged(isPlaying: false)
+			updater.invalidate()
 		}
 	}
 	
@@ -270,11 +275,11 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 				if options.contains(.shouldResume) {
 					// Interruption Ended - playback should resume
 					print("Interruption Ended - playback should resume")
-					self.play()
+					play()
 				} else {
 					// Interruption Ended - playback should NOT resume
 					print("Interruption Ended - playback should NOT resume")
-					delegate?.audioPlayerPlayingStatusChanged(isPlaying: false)
+					pause()
 				}
 			}
 		}
@@ -306,7 +311,7 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 					(output.portType == AVAudioSession.Port.headphones || output.portType == AVAudioSession.Port.bluetoothA2DP) {
 					print("headphones connected")
 					DispatchQueue.main.sync {
-						self.play()
+						play()
 					}
 					break
 				}
@@ -317,7 +322,7 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 						(output.portType == AVAudioSession.Port.headphones || output.portType == AVAudioSession.Port.bluetoothA2DP) {
 						print("headphones disconnected")
 						DispatchQueue.main.sync {
-							self.pause()
+							pause()
 						}
 						break
 					}
