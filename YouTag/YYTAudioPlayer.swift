@@ -25,7 +25,7 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	private var songDict: Dictionary<String, Any>!
 	private var currentSongIndex: Int!
 	private var updater = CADisplayLink()
-	private var isSuspended: Bool = false
+	private(set) var isSuspended: Bool = false
 	var isSongRepeat: Bool = false
 	
 	init(playlistManager: PlaylistManager) {
@@ -114,6 +114,7 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 			audioPlayer.play()
 			updateNowPlaying(isPause: false)
 			delegate?.audioPlayerPlayingStatusChanged(isPlaying: true)
+			updater = CADisplayLink(target: self, selector: #selector(updateDelegate))
 			updater.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
 		}
 	}
@@ -210,11 +211,17 @@ class YYTAudioPlayer: NSObject, AVAudioPlayerDelegate {
 
 		let songID = songDict["id"] as? String ?? ""
 		let imageData = try? Data(contentsOf: LocalFilesManager.getLocalFileURL(withNameAndExtension: "\(songID).jpg"))
-		if let image = UIImage(data: imageData ?? Data()) {
-			nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { size in
-				return image
-			}
+		let image: UIImage
+		if let imgData = imageData {
+			image = UIImage(data: imgData)!
+		} else {
+			image = UIImage(named: "placeholder")!
 		}
+		
+		nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { size in
+			return image
+		}
+
 		nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = audioPlayer.currentTime
 		nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = audioPlayer.duration
 		nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = audioPlayer.rate

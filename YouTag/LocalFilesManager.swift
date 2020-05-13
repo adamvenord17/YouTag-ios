@@ -34,7 +34,7 @@ class LocalFilesManager {
 		}
 	}
 	
-	static func downloadFile(from link: URL, filename: String, extension ext: String, completion: (() -> Void)? = nil) {
+	static func downloadFile(from link: URL, filename: String, extension ext: String, completion: ((Error?) -> Void)? = nil) {
 		let destination: DownloadRequest.Destination = { _, _ in
 			let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 			let fileURL = documentsURL.appendingPathComponent(filename + "." + ext)
@@ -47,10 +47,11 @@ class LocalFilesManager {
 		}.response { response in
 			if response.error == nil, let filePath = response.fileURL?.path {
 				print("Downloaded successfully to " + filePath)
+				completion?(nil)
 			} else {
 				print("Error downlaoding file: " + (response.error?.localizedDescription ?? "Unknown error"))
+				completion?(response.error)
 			}
-			completion?()
 		}
 	}
 	
@@ -69,27 +70,24 @@ class LocalFilesManager {
 		}
 	}
 	
-	static func extractArtworkFromSongMetadata(songID: String, songExtension: String) -> UIImage? {
-		let playerItem = AVPlayerItem(url: LocalFilesManager.getLocalFileURL(withNameAndExtension: "\(songID).\(songExtension)"))
-		for item in playerItem.asset.metadata {
-			guard let key = item.commonKey?.rawValue, let value = item.value else {
-				continue
-			}
-
-			if key == "artwork" {
-				if let artworkImage = UIImage(data: value as! Data) {
-					return artworkImage
-				}
-			}
-		}
-		return nil
-	}
-
 	static func extractDurationForSong(songID: String, songExtension: String) -> String {
 		let asset = AVAsset(url: LocalFilesManager.getLocalFileURL(withNameAndExtension: "\(songID).\(songExtension)"))
 		return TimeInterval(CMTimeGetSeconds(asset.duration)).stringFromTimeInterval()
 	}
-	
+
+	static func extractSongMetadata(songID: String, songExtension: String) -> Dictionary<String, Any> {
+		var dict = Dictionary<String, Any>()
+		let asset = AVAsset(url: LocalFilesManager.getLocalFileURL(withNameAndExtension: "\(songID).\(songExtension)"))
+		for item in asset.metadata {
+//			print(String(describing: item.commonKey?.rawValue) + "\t" + String(describing: item.key) + " -> " + String(describing: item.value))
+			guard let key = item.commonKey?.rawValue ?? item.key?.description, let value = item.value else {
+				continue
+			}
+			dict[key] = value
+		}
+		return dict
+	}
+
 	static func saveImage(_ image: UIImage?, withName filename: String) {
 		guard let img = image else {
 			return
@@ -120,6 +118,13 @@ class LocalFilesManager {
 			}
 		}
 		return true
+	}
+	
+	static func checkFileExist (_ filename_ext: String) -> Bool {
+		let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+		let documentsDirectory = paths[0]
+		let dataPathStr = documentsDirectory + "/" + filename_ext
+		return FileManager.default.fileExists(atPath: dataPathStr)
 	}
 	
 	static func clearTmpDirectory() {

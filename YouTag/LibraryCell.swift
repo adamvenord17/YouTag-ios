@@ -29,6 +29,7 @@ class LibraryCell : UITableViewCell {
 	}()
 	let artistLabel: MarqueeLabel = {
 		let lbl = MarqueeLabel.init(frame: .zero, duration: 8.0, fadeLength: 10.0)
+		lbl.textColor = GraphicColors.gray
 		lbl.trailingBuffer = 40.0
 		lbl.font = UIFont(name: "DINAlternate-Bold", size: 22 * 0.65)
 		lbl.textAlignment = .left
@@ -58,7 +59,7 @@ class LibraryCell : UITableViewCell {
 		titleLabel.leadingAnchor.constraint(equalTo: thumbnailImageView.trailingAnchor, constant: 10).isActive = true
 		titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -5).isActive = true
 		titleLabel.topAnchor.constraint(equalTo: thumbnailImageView.topAnchor, constant: 5).isActive = true
-		titleLabel.heightAnchor.constraint(equalTo: thumbnailImageView.heightAnchor, multiplier: 0.5, constant: -5).isActive = true
+		titleLabel.heightAnchor.constraint(equalTo: thumbnailImageView.heightAnchor, multiplier: 0.55, constant: -5).isActive = true
 		
 		self.contentView.addSubview(artistLabel)
 		artistLabel.translatesAutoresizingMaskIntoConstraints = false

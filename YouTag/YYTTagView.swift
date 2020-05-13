@@ -28,7 +28,11 @@ class YYTTagView: UICollectionView, UICollectionViewDataSource, UICollectionView
 	
 	
 	init(frame: CGRect, tagsList: NSMutableArray, isAddEnabled: Bool, isMultiSelection: Bool, isDeleteEnabled: Bool) {
-		super.init(frame: frame, collectionViewLayout: UICollectionViewFlowLayout())
+		let layout = LeftAlignedCollectionViewFlowLayout()
+		layout.minimumInteritemSpacing = 5
+		layout.minimumLineSpacing = 7.5
+		layout.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+		super.init(frame: frame, collectionViewLayout: layout)
 		self.register(YYTTagCell.self, forCellWithReuseIdentifier: "TagCell")
 		self.delegate = self
 		self.dataSource = self
@@ -77,7 +81,7 @@ class YYTTagView: UICollectionView, UICollectionViewDataSource, UICollectionView
 	func deselectAllTags() {
 		guard let selectedItems = indexPathsForSelectedItems else { return }
 		for indexPath in selectedItems { collectionView(self, didDeselectItemAt: indexPath) }
-		self.selectedTagList.removeAllObjects()
+		self.reloadData()
 	}
 
 	// MARK: Long Press Gesture Recognizer
@@ -130,7 +134,7 @@ class YYTTagView: UICollectionView, UICollectionViewDataSource, UICollectionView
 			tagCell.textField.placeholder = addTagPlaceHolder
 			tagCell.textField.font = UIFont.init(name: "DINCondensed-Bold", size: 16)
 		} else {
-			tagCell.backgroundColor = .clear
+			tagCell.backgroundColor = tagCell.isSelected ? GraphicColors.orange : UIColor.clear
 			tagCell.titleLabel.textColor = .darkGray
 			tagCell.titleLabel.font = UIFont.init(name: "DINCondensed-Bold", size: 16)
 			tagCell.textField.textColor = .darkGray
@@ -155,11 +159,7 @@ class YYTTagView: UICollectionView, UICollectionViewDataSource, UICollectionView
 		titleWidth = titleWidth > collectionView.frame.width * 0.475 ? collectionView.frame.width * 0.475:titleWidth
 		return CGSize(width: titleWidth, height: 32)
 	}
-	
-	func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-		return UIEdgeInsets (top: 5, left: 5, bottom: 5, right: 5)
-	}
-	
+		
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 		let cell = collectionView.cellForItem(at: indexPath) as! YYTTagCell
 		if isAddEnabled && indexPath.row == 0 {
@@ -168,16 +168,16 @@ class YYTTagView: UICollectionView, UICollectionViewDataSource, UICollectionView
 			cell.switchMode(enableEditing: true)
 			collectionView.performBatchUpdates(nil, completion: nil)
 		} else if self.allowsMultipleSelection {
-			cell.backgroundColor = .orange
+			cell.backgroundColor = GraphicColors.orange
 			selectedTagList.add(cell.titleLabel.text!)
 		}
 	}
 	
 	func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
 		if self.allowsMultipleSelection {
-			let cell = collectionView.cellForItem(at: indexPath) as! YYTTagCell
-			cell.backgroundColor = .white
-			selectedTagList.remove(cell.titleLabel.text!)
+			let cell = collectionView.cellForItem(at: indexPath) as? YYTTagCell
+			cell?.backgroundColor = .clear
+			selectedTagList.remove(cell?.titleLabel.text as Any)
 		}
 	}
 	
@@ -205,4 +205,35 @@ class YYTTagView: UICollectionView, UICollectionViewDataSource, UICollectionView
 		self.performBatchUpdates(nil, completion: nil)
 	}
 	
+}
+
+class LeftAlignedCollectionViewFlowLayout: UICollectionViewFlowLayout {
+	
+	override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+		let attributes = super.layoutAttributesForElements(in: rect)?.map { $0.copy() as! UICollectionViewLayoutAttributes }
+		
+		var leftMargin = sectionInset.left
+		var maxY: CGFloat = -1.0
+		attributes?.forEach { layoutAttribute in
+			guard layoutAttribute.representedElementCategory == .cell else {
+				return
+			}
+
+			if Int(layoutAttribute.frame.origin.y) >= Int(maxY) || layoutAttribute.frame.origin.x == sectionInset.left {
+				leftMargin = sectionInset.left
+			}
+			
+			if layoutAttribute.frame.origin.x == sectionInset.left {
+				leftMargin = sectionInset.left
+			}
+			else {
+				layoutAttribute.frame.origin.x = leftMargin
+			}
+
+			leftMargin += layoutAttribute.frame.width + minimumInteritemSpacing
+			maxY = max(layoutAttribute.frame.maxY , maxY)
+		}
+		
+		return attributes
+	}
 }
