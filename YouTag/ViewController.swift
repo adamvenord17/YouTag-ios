@@ -2,8 +2,8 @@
 //  ViewController.swift
 //  YouTag
 //
-//  Created by Youstanzr Alqattan on 8/12/19.
-//  Copyright © 2019 Youstanzr Alqattan. All rights reserved.
+//  Created by Youstanzr on 8/12/19.
+//  Copyright © 2019 Youstanzr. All rights reserved.
 //
 
 import UIKit
@@ -33,7 +33,7 @@ class ViewController: UIViewController, FilterPickerViewDelegate, YYTTagViewDele
 	}()
 	let versionLabel: UILabel = {
 		let lbl = UILabel()
-		lbl.text = "v20200512"
+		lbl.text = "v20200514"
 		lbl.font = UIFont.init(name: "DINCondensed-Bold", size: 14)
 		lbl.textAlignment = .right
 		lbl.textColor = .lightGray
@@ -125,6 +125,7 @@ class ViewController: UIViewController, FilterPickerViewDelegate, YYTTagViewDele
 		
 	override func viewWillAppear(_ animated: Bool) {
 		playlistManager.computePlaylist()
+		playlistManager.playlistLibraryView.scrollToTop()
 	}
 	
 	override func viewWillDisappear(_ animated: Bool) {
