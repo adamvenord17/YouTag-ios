@@ -17,8 +17,8 @@ class YYTTagCell: UICollectionViewCell {
 		label.lineBreakMode = .byTruncatingMiddle
 		return label
 	}()
-	let textField: UITextField = {
-		let txtfld = UITextField()
+	let textField: SearchTextField = {
+		let txtfld = SearchTextField()
 		txtfld.addPadding(padding: .equalSpacing(7.5))
 		txtfld.tintColor = .white
 		txtfld.backgroundColor = UIColor.clear
@@ -40,6 +40,14 @@ class YYTTagCell: UICollectionViewCell {
 	
 	fileprivate var titleLabelDefaultLeadingAnchor: NSLayoutConstraint?
 	fileprivate var titleLabelWithImageLeadingAnchor: NSLayoutConstraint?
+    fileprivate var tagList: [String]?
+    var areSuggestionsEnabled: Bool? {
+        didSet {
+            if !(areSuggestionsEnabled!) {
+                textField.filterStrings([])
+            }
+        }
+    }
 
 	override init(frame: CGRect) {
 		super.init(frame: frame)
@@ -74,7 +82,7 @@ class YYTTagCell: UICollectionViewCell {
 		textField.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -2.5).isActive = true
 		textField.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 6).isActive = true  // Because the font is shifted upward
 	}
-	
+    
 	required init?(coder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
@@ -98,5 +106,4 @@ class YYTTagCell: UICollectionViewCell {
 			textField.isHidden = true
 		}
 	}
-	
 }
